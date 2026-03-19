@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- ═══ PWA — Manifest & Theme ═══ -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#F07828"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="application-name" content="Beer Cellar"/>
+
+<!-- ═══ PWA — Apple / iOS ═══ -->
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Beer Cellar"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png"/>
+
+<!-- ═══ PWA — Favicon & misc ═══ -->
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<meta name="description" content="La tua cantina digitale per birre artigianali — traccia, valuta e scopri."/>
+<meta name="keywords" content="birra artigianale, craft beer, cantina, cellar, valutazione"/>
+<meta name="author" content="Progetto personale"/>
+<title>Beer Cellar 🍺</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ HOME VIEW ═══ -->
+  <div id="view-home" class="view">
+
+    <!-- Sidebar: search, categories, filters (transparent on mobile via display:contents) -->
+    <div class="home-sidebar">
+      <div class="app-bar">
+        <div>
+          <div class="app-bar-title">Beer Cellar</div>
+          <div class="app-bar-subtitle">Birrifici Artigianali</div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="position:relative">
+          <button class="icon-btn" id="sort-toggle" title="Ordina">⇅</button>
+          <div class="sort-dropdown" id="sort-dropdown">
+            <div class="sort-option active" data-sort="date_desc">📅  Data aggiunta</div>
+            <div class="sort-option" data-sort="rating_desc">⭐  Voto</div>
+            <div class="sort-option" data-sort="name_asc">🔤  Nome A–Z</div>
+            <div class="sort-option" data-sort="brewery_asc">🏭  Birrificio</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="icon">🔍</span>
+          <input id="search-input" type="search" placeholder="Cerca birra, birrificio, origine…" autocomplete="off"/>
+          <button class="search-clear" id="search-clear">✕</button>
+        </div>
+      </div>
+
+      <div class="chip-row" id="category-chips"></div>
+
+      <div class="filter-bar" id="filter-bar">
+        <button class="filter-chip active" data-filter="all">🍺 Tutte</button>
+        <button class="filter-chip" data-filter="tried">✅ Provate</button>
+        <button class="filter-chip" data-filter="favorites">❤️ Preferite</button>
+      </div>
+    </div><!-- /home-sidebar -->
+
+    <!-- Main: count + beer list -->
+    <div class="home-main">
+      <div class="list-toolbar">
+        <span class="beer-count" id="beer-count"></span>
+      </div>
+      <div class="beer-list" id="beer-list"></div>
+    </div><!-- /home-main -->
+
+  </div>
+
+  <!-- ═══ DETAIL VIEW ═══ -->
+  <div id="view-detail" class="view">
+    <div class="app-bar">
+      <button class="icon-btn" id="detail-back">←</button>
+      <div style="flex:1"></div>
+      <button class="icon-btn" id="detail-fav" title="Preferita">🤍</button>
+      <button class="icon-btn" id="detail-edit" title="Modifica">✏️</button>
+      <button class="icon-btn danger" id="detail-delete" title="Elimina">🗑</button>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+
+  <!-- ═══ ADD/EDIT VIEW ═══ -->
+  <div id="view-add" class="view">
+    <div class="app-bar">
+      <button class="icon-btn" id="add-back">←</button>
+      <div class="app-bar-title" id="add-title">Nuova birra</div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Informazioni principali</div>
+      <div class="form-card">
+        <div class="field-group">
+          <label class="field-label">Nome birra *</label>
+          <input class="field-input" id="f-name" type="text" placeholder="es. Punk IPA"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Birrificio</label>
+          <input class="field-input" id="f-brewery" type="text" placeholder="es. BrewDog"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Origine (paese / regione)</label>
+          <input class="field-input" id="f-origin" type="text" placeholder="es. Scozia"/>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Categoria</label>
+          <div class="cat-selector" id="cat-selector">
+            <span class="cat-selector-emoji" id="cat-sel-emoji">🍺</span>
+            <div class="cat-selector-info">
+              <div class="cat-selector-label">Seleziona categoria</div>
+              <div class="cat-selector-value" id="cat-sel-name">Lager</div>
+            </div>
+            <span class="cat-selector-arrow">▾</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Dati tecnici</div>
+      <div class="form-card">
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">ABV (%)</label>
+            <input class="field-input" id="f-abv" type="number" step="0.1" min="0" max="99" placeholder="5.0"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label">IBU</label>
+            <input class="field-input" id="f-ibu" type="number" min="0" max="999" placeholder="30"/>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Colore</label>
+          <input class="field-input" id="f-color" type="text" placeholder="es. Ambrata intensa con testa avorio"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">La tua valutazione</div>
+      <div class="form-card">
+        <div class="rating-block">
+          <div class="star-picker" id="form-star-picker"></div>
+          <div class="rating-label" id="form-rating-label">Nessuna valutazione</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Profilo &amp; Storia</div>
+      <div class="form-card">
+        <div class="field-group">
+          <label class="field-label">Profilo organolettico</label>
+          <textarea class="field-textarea" id="f-desc" placeholder="Aroma, sapore, corpo, finale…"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Storia e curiosità</label>
+          <textarea class="field-textarea" id="f-history" placeholder="Origine, aneddoti, tradizioni…"></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Note personali</label>
+          <textarea class="field-textarea" id="f-notes" placeholder="Abbinamenti, occasioni, ricordi…" style="min-height:60px"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Opzioni</div>
+      <div class="form-card">
+        <div class="toggle-row">
+          <span class="toggle-icon">✅</span>
+          <span class="toggle-label">Già provata</span>
+          <label class="toggle"><input type="checkbox" id="f-tried"/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-icon">❤️</span>
+          <span class="toggle-label">Preferita</span>
+          <label class="toggle"><input type="checkbox" id="f-fav"/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section" style="padding-bottom:20px">
+      <button class="save-btn" id="save-btn" disabled>
+        <span id="save-icon">＋</span>
+        <span id="save-label">Aggiungi birra</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ STATS VIEW ═══ -->
+  <div id="view-stats" class="view">
+    <div class="app-bar">
+      <div>
+        <div class="app-bar-title">Beer Cellar</div>
+        <div class="app-bar-subtitle">Le tue statistiche</div>
+      </div>
+    </div>
+
+    <div class="stats-header-bar">
+      <span class="stats-header-label">Panoramica</span>
+      <button class="export-btn" id="import-btn" title="Importa dati cantina">
+        <span>📂</span> Importa
+      </button>
+      <button class="export-btn" id="export-btn" title="Esporta dati cantina">
+        <span>💾</span> Esporta
+      </button>
+      <input type="file" id="import-file-input" accept=".json,application/json" style="display:none"/>
+    </div>
+
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="stats-section" id="stats-top"></div>
+    <div class="stats-section" id="stats-bars"></div>
+  </div>
+
+  <!-- ── Bottom Nav ── -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item active" data-view="home">
+      <span class="nav-icon">🍺</span>
+      <span>Cantina</span>
+    </button>
+    <button class="nav-item" data-view="stats">
+      <span class="nav-icon">📊</span>
+      <span>Statistiche</span>
+    </button>
+  </nav>
+
+  <!-- FAB -->
+  <button class="fab" id="fab" title="Aggiungi birra">＋</button>
+</div>
+
+<!-- ═══ CATEGORY SHEET ═══ -->
+<div class="overlay" id="cat-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Categoria</div>
+    <div class="sheet-list" id="cat-sheet-list"></div>
+  </div>
+</div>
+
+<!-- ═══ IMPORT DIALOG ═══ -->
+<div class="dialog-overlay" id="import-dialog">
+  <div class="dialog">
+    <div class="dialog-icon">📂</div>
+    <div class="dialog-title">Importa cantina</div>
+    <div class="dialog-text" id="import-dialog-text">Come vuoi procedere con i dati importati?</div>
+    <div class="dialog-actions" style="flex-direction:column;gap:8px">
+      <button class="dialog-btn" id="import-merge"
+        style="border-color:rgba(240,120,40,0.35);color:var(--amber)">
+        🔀 Unisci (mantieni esistenti)
+      </button>
+      <button class="dialog-btn danger" id="import-replace">
+        ⚠️ Sostituisci tutto
+      </button>
+      <button class="dialog-btn" id="import-cancel">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DELETE DIALOG ═══ -->
+<div class="dialog-overlay" id="delete-dialog">
+  <div class="dialog">
+    <div class="dialog-icon">🗑</div>
+    <div class="dialog-title">Elimina birra</div>
+    <div class="dialog-text" id="delete-dialog-text">Vuoi davvero eliminarla?</div>
+    <div class="dialog-actions">
+      <button class="dialog-btn" id="delete-cancel">Annulla</button>
+      <button class="dialog-btn danger" id="delete-confirm">Elimina</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SNACKBAR ═══ -->
+<div id="snackbar"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA & CONSTANTS
+// ═══════════════════════════════════════════════════════════
+
+const CATEGORIES = [
+  { id:'lager',      name:'Lager',              emoji:'🍺', color:'#D4A017' },
+  { id:'ale',        name:'Ale',                emoji:'🍻', color:'#D4882E' },
+  { id:'ipa',        name:'IPA',                emoji:'🌿', color:'#6B8F3E' },
+  { id:'stout',      name:'Stout & Porter',     emoji:'🖤', color:'#A08060' },
+  { id:'weizen',     name:'Weizen & Blanche',   emoji:'☁️', color:'#C8A84B' },
+  { id:'sour',       name:'Sour & Lambic',      emoji:'🍋', color:'#B5A014' },
+  { id:'trappist',   name:'Trappista & Abbey',  emoji:'⛪', color:'#8B4513' },
+  { id:'pilsner',    name:'Pilsner',             emoji:'🌾', color:'#C8B400' },
+  { id:'saison',     name:'Saison & Farmhouse', emoji:'🌻', color:'#D4A856' },
+  { id:'barleywine', name:'Barleywine',         emoji:'🥃', color:'#8B2020' },
+  { id:'radler',     name:'Radler & Shandy',    emoji:'🍊', color:'#E8952E' },
+  { id:'other',      name:'Altro',              emoji:'🔮', color:'#9E7B5A' },
+];
+const CAT_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+
+// ── Tutti i rating e favorite azzerati ──
+const SAMPLE_BEERS = [
+  { name:'Kalopsia', brewery:'50&50 Craft Brewery', category:'ipa', rating:0, abv:5.6, ibu:40,
+    origin:'Varese, Italia', color:'Ambrata chiara limpida, testa bianca cremosa',
+    description:'APA (American Pale Ale) flagship del birrificio. Luppoli americani Cascade e Centennial donano classici aromi di pompelmo, resina e fiori d\'arancio. Maltatura caramellata presente ma discreta, a supporto dell\'amaro bilanciato e persistente.',
+    history:'"Kalopsia" in greco antico significa "visione distorta di bellezza". È la birra che ha lanciato il birrificio: con oltre 300 recensioni entusiaste è diventata l\'identità di 50&50, una piccola grande ossessione varesina.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Danko', brewery:'50&50 Craft Brewery', category:'stout', rating:0, abv:8.0, ibu:25,
+    origin:'Varese, Italia', color:'Nero profondo con riflessi bruni, testa beige compatta',
+    description:'Baltic Porter di forza e complessità notevoli. Aromi intensi di cioccolato fondente, caffè espresso, frutta sotto spirito e tabacco. La fermentazione lager garantisce una pulizia straordinaria. Alcol perfettamente integrato. Corpo pieno e vellutato.',
+    history:'"Danko" omaggia il personaggio mitologico slavo che strappò il proprio cuore ardente dal petto per illuminare il cammino del suo popolo. Media di 4.86/5: la birra più amata del catalogo.',
+    tried:false, favorite:false, notes:'' },
+  { name:'United', brewery:'50&50 Craft Brewery', category:'ipa', rating:0, abv:5.8, ibu:40,
+    origin:'Varese, Italia', color:'Ambrata dorata brillante, testa bianca compatta',
+    description:'DDH West Coast IPA prodotta con doppio dry-hopping. L\'intensità aromatica è notevole: agrumi, frutta tropicale e note resinose di pino. Il profilo West Coast si esprime in un amaro secco, definitivo e prolungato.',
+    history:'"United" celebra l\'unione tra la tradizione West Coast californiana e la scena craft italiana. Il doppio dry-hopping massimizza gli aromi senza incrementare l\'amaro percepito.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Man Bassa', brewery:'50&50 Craft Brewery', category:'pilsner', rating:0, abv:5.0, ibu:35,
+    origin:'Varese, Italia', color:'Paglierina dorata limpida, testa bianca abbondante',
+    description:'Pilsner di riferimento del birrificio: equilibrata, di grande bevibilità. Luppoli nobili Saaz conferiscono l\'aroma speziato e floreale tipico della tradizione boema.',
+    history:'"Man Bassa" è espressione colloquiale lombarda per indicare qualcosa di travolgente. Con una valutazione media di 4.56/5, il nome si è rivelato profetico.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Graziella', brewery:'50&50 Craft Brewery', category:'lager', rating:0, abv:6.5, ibu:15,
+    origin:'Varese, Italia', color:'Dorata ambrata con riflessi vinosi, testa fine e persistente',
+    description:'Italian Grape Lager prodotta con mosto d\'uva. Note di frutta bianca, pesca e agrumi si fondono con la pulizia della fermentazione lager. Dolcezza vinosa soffusa, finale secco.',
+    history:'L\'Italian Grape Lager è uno stile inventato in Italia riconosciuto dalla guida BJCP. Graziella porta in lattina i vigneti lombardi: ibrido perfetto tra birreria e viticoltura.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Nelson³', brewery:'50&50 Craft Brewery', category:'ipa', rating:0, abv:6.5, ibu:45,
+    origin:'Varese, Italia', color:'Dorata intensa con leggera velatura, testa bianca abbondante',
+    description:'New Zealand IPA interamente costruita sul luppolo Nelson Sauvin neozelandese, utilizzato in tripla dose. Esplosione aromatica di uva bianca, passion fruit e ribes. Corpo medio, amaro fresco e pulito.',
+    history:'Nelson Sauvin è il luppolo emblema della Nuova Zelanda, noto per un profilo che ricorda il Sauvignon Blanc. 50&50 ne esalta le caratteristiche attraverso una tripla aggiunta.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Slomo', brewery:'50&50 Craft Brewery', category:'ipa', rating:0, abv:5.0, ibu:60,
+    origin:'Varese, Italia', color:'Dorata brillante con leggera velatura, testa bianca fine',
+    description:'New Zealand IPL (India Pale Lager): la precisione della fermentazione lager al servizio dell\'intensità luppolata neozelandese. Aroma vivace di frutta tropicale, kiwi e agrumi.',
+    history:'"Slomo" descrive la lenta fermentazione a basse temperature. L\'IPL è uno stile ibrido: processo lager, spirito IPA.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Bosco 21030', brewery:'50&50 Craft Brewery', category:'lager', rating:0, abv:6.0, ibu:20,
+    origin:'Varese, Italia', color:'Ambrata rame con sfumature miele, testa avorio',
+    description:'Chestnut Lager prodotta con farina di castagne, ingrediente tipico dell\'entroterra varesino. Aroma avvolgente di castagne arrostite, nocciola e biscotto.',
+    history:'Il CAP 21030 identifica i comuni della Valceresio, area boschiva e castanicola a pochi km da Varese. I castagneti diventano ingrediente vivo in questa lager.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Crisp', brewery:'50&50 Craft Brewery', category:'ale', rating:0, abv:5.0, ibu:32,
+    origin:'Varese, Italia', color:'Dorata con riflessi ambrati, testa bianca fine',
+    description:'Belgian Ale dal carattere elegante e beverino. Profumi floreali e fruttati tipici dei lieviti belgi, con note di agrumi e erbe aromatiche. Corpo medio, carbonazione vivace, finale secco.',
+    history:'50&50 nasce dalla passione di due soci al 50% ciascuno. Crisp rappresenta la loro lettura della tradizione belga: lieviti d\'importazione, ingredienti locali.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Janie Jones', brewery:'50&50 Craft Brewery', category:'ipa', rating:0, abv:5.8, ibu:25,
+    origin:'Varese, Italia', color:'Ambrata chiara, testa bianca compatta',
+    description:'English IPA dalla personalità equilibrata e raffinata. Luppoli inglesi tradizionali regalano note erbacee, bergamotto e marmellata d\'arancia. L\'amaro è elegante, mai aggressivo.',
+    history:'Janie Jones è il titolo che apre il debut album dei The Clash (1977). 50&50 celebra la cultura UK con una birra che richiama i pub londinesi.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Bee Serious', brewery:'50&50 Craft Brewery', category:'lager', rating:0, abv:6.5, ibu:20,
+    origin:'Varese, Italia', color:'Dorata ambrata brillante con testa color miele',
+    description:'Honey Lager che unisce la pulizia della fermentazione lager all\'aromaticità delicata del miele naturale. Note floreali e di nettare, corpo morbido e rotondo.',
+    history:'Il nome gioca sul doppio senso inglese "Bee" (ape) e "Be" (sii). Utilizza miele locale della zona varesina.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Drama', brewery:'50&50 Craft Brewery', category:'lager', rating:0, abv:5.2, ibu:0,
+    origin:'Varese, Italia', color:'Bruno scuro con riflessi rubino, testa beige persistente',
+    description:'Tmavý Ležák, ovvero la lager scura boema per eccellenza. Malti scuri e Vienna conferiscono note di pane tostato, caramello e cioccolato al latte.',
+    history:'"Tmavý Ležák" significa "lager scura" in ceco. 50&50 porta il carattere di Praga sulle rive del Lago di Varese.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Frank You', brewery:'50&50 Craft Brewery', category:'other', rating:0, abv:5.3, ibu:22,
+    origin:'Varese, Italia', color:'Ambrata con riflessi ramati, testa compatta',
+    description:'Rauch Beer: la birra affumicata tedesca in versione 50&50. Il malto affumicato al legno di faggio dona aromi di prosciutto crudo e fumo dolce.',
+    history:'Le Rauchbier nascono a Bamberga, Franconia. "Frank You" è un gioco di parole: Franconia (Frank) incontra il ringraziamento ironico.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Kellerona', brewery:'50&50 Craft Brewery', category:'lager', rating:0, abv:5.0, ibu:15,
+    origin:'Varese, Italia', color:'Dorata torbida non filtrata, testa bianca abbondante',
+    description:'Kellerbier non filtrata. Erbaceo e floreale all\'aroma, con note di lievito fresco e grano. Morbida, dissetante, con carbonazione contenuta.',
+    history:'"Keller" (cantina in tedesco) indica una birra non filtrata. La "-ona" finale è il suffisso italiano accrescitivo affettuoso.',
+    tried:false, favorite:false, notes:'' },
+  { name:'McBlack', brewery:'50&50 Craft Brewery', category:'ale', rating:0, abv:8.0, ibu:25,
+    origin:'Varese, Italia', color:'Mogano scuro quasi nero, testa beige persistente',
+    description:'Scotch Ale dall\'anima forte e avvolgente. Malti scuri tostati con note di cioccolato fondente, caramello bruciato e prugna. Birra da meditazione.',
+    history:'"Mc" è il prefisso scozzese per eccellenza. La Scotch Ale (Wee Heavy) è progettata per riscaldare nei climi rigidi.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Cowboy Kirk', brewery:'50&50 Craft Brewery', category:'ipa', rating:0, abv:5.5, ibu:45,
+    origin:'Varese, Italia', color:'Nera con riflessi bruni, testa cremosa nocciola',
+    description:'Black IPA che fonde l\'intensità del malto torrefatto con l\'aggressività luppolata americana. Aroma di caffè, cioccolato fondente e resina.',
+    history:'La Black IPA rompe le regole, mescolando tradizione inglese e aggressività americana. Cowboy Kirk è un fuorilegge che non rispetta le categorie.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Italian Pils', brewery:'50&50 Craft Brewery', category:'pilsner', rating:0, abv:4.5, ibu:35,
+    origin:'Varese, Italia', color:'Paglierina brillante, testa bianca fine e persistente',
+    description:'Interpretazione italiana dello stile pilsner: luppoli italiani conferiscono un aroma floreale e speziato insolito rispetto alla tradizione boema.',
+    history:'L\'Italian Pils reinterpreta la tradizione con luppoli autoctoni italiani. 50&50 abbraccia questa corrente con convinzione.',
+    tried:false, favorite:false, notes:'' },
+  { name:'Better Call Welly', brewery:'50&50 Craft Brewery', category:'ale', rating:0, abv:4.2, ibu:0,
+    origin:'Varese, Italia', color:'Ambrata ramata, testa avorio compatta',
+    description:'English Bitter di facile bevibilità, omaggio alla tradizione dei pub britannici. Maltatura biscottata e caramellata, luppoli erbacei e terrosi.',
+    history:'"Better Call Welly" rimanda alla cultura pub inglese dove il Bitter è la birra per eccellenza. Bassa gradazione, alta bevibilità.',
+    tried:false, favorite:false, notes:'' },
+];
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let state = {
+  beers: [],
+  currentView: 'home',
+  prevView: 'home',
+  selectedBeer: null,
+  editingId: null,
+  searchQuery: '',
+  selectedCategory: null,
+  filterType: 'all',
+  sortOrder: 'date_desc',
+  formRating: 0,
+  formCategory: 'lager',
+};
+
+// ── LocalStorage — v2 force re-seed ──
+const LS_KEY = 'beer-cellar-5050-v4';
+
+function save() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state.beers));
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) { state.beers = JSON.parse(raw); }
+    else      { seed(); }
+  } catch { seed(); }
+}
+function seed() {
+  let id = Date.now();
+  state.beers = SAMPLE_BEERS.map(b => ({ ...b, id: id++, dateAdded: id }));
+  save();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT — File System Access API + fallback download
+// ═══════════════════════════════════════════════════════════
+async function exportData() {
+  const payload = {
+    app: 'Beer Cellar',
+    exportDate: new Date().toISOString(),
+    version: '2.0',
+    stats: {
+      total: state.beers.length,
+      tried: state.beers.filter(b => b.tried).length,
+      favorites: state.beers.filter(b => b.favorite).length,
+    },
+    beers: state.beers,
+  };
+  const json     = JSON.stringify(payload, null, 2);
+  const blob     = new Blob([json], { type: 'application/json' });
+  const filename = `beer-cellar-${new Date().toISOString().slice(0,10)}.json`;
+
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{
+          description: 'File JSON — Beer Cellar',
+          accept: { 'application/json': ['.json'] },
+        }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      snackbar('💾 Dati salvati con successo!');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // utente ha annullato
+      // Fallthrough al download classico
+    }
+  }
+  // Fallback: download diretto
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  snackbar('💾 Download avviato — controlla la cartella Download');
+}
+
+// ═══════════════════════════════════════════════════════════
+// IMPORT — validate, merge or replace
+// ═══════════════════════════════════════════════════════════
+
+// Pending parsed beers waiting for user strategy choice
+let _importPending = null;
+
+function importData() {
+  document.getElementById('import-file-input').click();
+}
+
+function handleImportFile(file) {
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    snackbar('❌ File troppo grande (max 5 MB)');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let payload;
+    try {
+      payload = JSON.parse(e.target.result);
+    } catch {
+      snackbar('❌ File non valido — JSON malformato');
+      return;
+    }
+
+    // ── Schema validation ──────────────────────────────────
+    // Supporta sia il formato Beer Cellar (con wrapper) sia un array grezzo
+    let beers;
+    if (Array.isArray(payload)) {
+      beers = payload;
+    } else if (payload && Array.isArray(payload.beers)) {
+      // Controlla firma app per avvisare se è un file esterno
+      if (payload.app && payload.app !== 'Beer Cellar') {
+        snackbar('⚠️ File da app diversa — tentativo di import comunque');
+      }
+      beers = payload.beers;
+    } else {
+      snackbar('❌ Formato non riconosciuto — nessun array "beers" trovato');
+      return;
+    }
+
+    // ── Field sanitization: garantisce i campi minimi ──────
+    const sanitize = (b, fallbackId) => ({
+      id:          typeof b.id === 'number' ? b.id : fallbackId,
+      dateAdded:   typeof b.dateAdded === 'number' ? b.dateAdded : Date.now(),
+      name:        String(b.name        || '').trim(),
+      brewery:     String(b.brewery     || '').trim(),
+      category:    CAT_MAP[b.category]  ? b.category : 'other',
+      rating:      typeof b.rating === 'number' ? Math.min(5, Math.max(0, b.rating)) : 0,
+      abv:         parseFloat(b.abv)    || 0,
+      ibu:         parseInt(b.ibu)      || 0,
+      origin:      String(b.origin      || '').trim(),
+      color:       String(b.color       || '').trim(),
+      description: String(b.description || '').trim(),
+      history:     String(b.history     || '').trim(),
+      notes:       String(b.notes       || '').trim(),
+      tried:       !!b.tried,
+      favorite:    !!b.favorite,
+    });
+
+    let idCursor = Date.now();
+    const valid = beers
+      .filter(b => b && String(b.name || '').trim().length > 0)
+      .map(b => sanitize(b, idCursor++));
+
+    if (!valid.length) {
+      snackbar('❌ Nessuna birra valida trovata nel file');
+      return;
+    }
+
+    _importPending = valid;
+
+    const dlg = document.getElementById('import-dialog');
+    document.getElementById('import-dialog-text').textContent =
+      `Trovate ${valid.length} birre nel file. Come vuoi procedere?`;
+    dlg.classList.add('open');
+  };
+
+  reader.onerror = () => snackbar('❌ Errore nella lettura del file');
+  reader.readAsText(file);
+}
+
+function applyImport(strategy) {
+  if (!_importPending) return;
+  const incoming = _importPending;
+  _importPending = null;
+
+  const dlg = document.getElementById('import-dialog');
+  dlg.classList.remove('open');
+
+  if (strategy === 'replace') {
+    state.beers = incoming;
+    save();
+    snackbar(`✅ Cantina sostituita — ${incoming.length} birre caricate`);
+  } else {
+    // Merge: deduplicazione per ID; le nuove con ID già esistenti ottengono un nuovo ID
+    const existingIds = new Set(state.beers.map(b => b.id));
+    let idCursor = Date.now();
+    const toAdd = incoming.map(b => {
+      if (existingIds.has(b.id)) {
+        return { ...b, id: idCursor++ };  // collisione ID → rinomina
+      }
+      return b;
+    });
+    state.beers = [...state.beers, ...toAdd];
+    save();
+    snackbar(`✅ Merge completato — aggiunte ${toAdd.length} birre`);
+  }
+
+  navigate('home');
+}
+
+// ═══════════════════════════════════════════════════════════
+function navigate(view, opts = {}) {
+  state.prevView = state.currentView;
+  state.currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+
+  const showNav = view === 'home' || view === 'stats';
+  document.getElementById('bottom-nav').style.display = showNav ? 'flex' : 'none';
+  document.getElementById('fab').style.display = (view === 'home') ? 'flex' : 'none';
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === view);
+  });
+
+  if (view === 'home')   renderHome();
+  if (view === 'stats')  renderStats();
+  if (view === 'detail') renderDetail(opts.id);
+  if (view === 'add')    renderAdd(opts.id || null);
+
+  window.scrollTo(0, 0);
+  // Also reset the inner scroll panel used on large screens
+  const mainPanel = document.querySelector('.home-main');
+  if (mainPanel) mainPanel.scrollTop = 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function getCat(id) { return CAT_MAP[id] || CAT_MAP['other']; }
+function uid() { return Date.now() + Math.floor(Math.random() * 1000); }
+
+function renderStars(rating, size = 'sm') {
+  const sizes = { sm: '0.82rem', md: '0.95rem', lg: '1.25rem' };
+  let html = `<span class="stars">`;
+  for (let i = 1; i <= 5; i++) {
+    const full = rating >= i;
+    const half = !full && rating >= i - 0.5;
+    const icon = full ? '⭐' : half ? '✨' : '☆';
+    const color = (full || half) ? '#F4C840' : '#5A4A38';
+    html += `<span class="star" style="font-size:${sizes[size]};color:${color}">${icon}</span>`;
+  }
+  return html + '</span>';
+}
+
+function ratingLabel(r) {
+  if (!r)       return 'Tocca le stelle per valutare';
+  if (r < 1.5)  return 'Non è per me';
+  if (r < 2.5)  return 'Nella media';
+  if (r < 3.5)  return 'Discreta';
+  if (r < 4.5)  return 'Ottima!';
+  if (r < 5.0)  return 'Quasi perfetta';
+  return 'Capolavoro assoluto!';
+}
+
+function makeBadge(text, color) {
+  return `<span class="badge" style="background:${color}1A;border-color:${color}50;color:${color}">${text}</span>`;
+}
+
+function snackbar(msg) {
+  const el = document.getElementById('snackbar');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILTER + SORT pipeline
+// ═══════════════════════════════════════════════════════════
+function getFilteredBeers() {
+  let beers = [...state.beers];
+  const q = state.searchQuery.trim().toLowerCase();
+  if (q) beers = beers.filter(b =>
+    b.name.toLowerCase().includes(q) ||
+    (b.brewery||'').toLowerCase().includes(q) ||
+    (b.origin||'').toLowerCase().includes(q));
+  if (state.selectedCategory)
+    beers = beers.filter(b => b.category === state.selectedCategory);
+  if (state.filterType === 'tried')     beers = beers.filter(b => b.tried);
+  if (state.filterType === 'favorites') beers = beers.filter(b => b.favorite);
+
+  switch (state.sortOrder) {
+    case 'date_desc':   beers.sort((a,b) => b.dateAdded - a.dateAdded); break;
+    case 'rating_desc': beers.sort((a,b) => b.rating - a.rating);        break;
+    case 'name_asc':    beers.sort((a,b) => a.name.localeCompare(b.name)); break;
+    case 'brewery_asc': beers.sort((a,b) => (a.brewery||'').localeCompare(b.brewery||'')); break;
+  }
+  return beers;
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOME RENDER
+// ═══════════════════════════════════════════════════════════
+function renderHome() {
+  renderCategoryChips();
+  renderBeerList();
+}
+
+function renderCategoryChips() {
+  const el = document.getElementById('category-chips');
+  let html = `<button class="chip ${!state.selectedCategory ? 'active' : ''}" data-cat="" style="${!state.selectedCategory ? '--cat-color:var(--amber)' : ''}">🍺 Tutte</button>`;
+  CATEGORIES.forEach(c => {
+    const active = state.selectedCategory === c.id;
+    html += `<button class="chip ${active ? 'active' : ''}" data-cat="${c.id}" style="${active ? `--cat-color:${c.color}` : ''}">${c.emoji} ${c.name}</button>`;
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      const v = ch.dataset.cat;
+      state.selectedCategory = v ? (v === state.selectedCategory ? null : v) : null;
+      state.searchQuery = '';
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-clear').classList.remove('visible');
+      renderHome();
+    });
+  });
+}
+
+function renderBeerList() {
+  const beers = getFilteredBeers();
+  const el    = document.getElementById('beer-list');
+  const count = document.getElementById('beer-count');
+  count.textContent = beers.length
+    ? `${beers.length} birr${beers.length === 1 ? 'a' : 'e'}`
+    : '';
+
+  if (!beers.length) {
+    const hasFilter = state.searchQuery || state.selectedCategory;
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-emoji">🍺</div>
+        <h3>${hasFilter ? 'Nessuna birra trovata' : 'La tua cantina è vuota'}</h3>
+        <p>${hasFilter ? 'Prova con un termine diverso o rimuovi i filtri.' : 'Inizia aggiungendo la prima birra della tua collezione.'}</p>
+        ${!hasFilter ? `<button class="save-btn" style="margin-top:16px;max-width:260px" onclick="navigate('add')">＋ Aggiungi la prima birra</button>` : ''}
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = beers.map((b, i) => {
+    const cat = getCat(b.category);
+    return `
+    <div class="card beer-card" data-id="${b.id}" style="animation-delay:${i * 28}ms">
+      <div class="beer-card-stripe" style="--cat-color:${cat.color}"></div>
+      <div class="beer-card-body">
+        <div class="beer-emoji-wrap" style="--cat-color:${cat.color}">${cat.emoji}</div>
+        <div class="beer-meta">
+          <div class="beer-name">${esc(b.name)}</div>
+          <div class="beer-brewery">${esc(b.brewery || '')}</div>
+          ${b.origin ? `<div class="beer-origin">📍 ${esc(b.origin)}</div>` : ''}
+        </div>
+        <button class="fav-btn" data-id="${b.id}" onclick="event.stopPropagation();toggleFav(${b.id})">${b.favorite ? '❤️' : '🤍'}</button>
+      </div>
+      <div class="beer-card-footer">
+        ${makeBadge(`${cat.emoji} ${cat.name}`, cat.color)}
+        ${b.abv > 0 ? makeBadge(`${parseFloat(b.abv).toFixed(1)}%`, '#F4C840') : ''}
+        <span style="flex:1"></span>
+        ${b.rating > 0
+          ? `${renderStars(b.rating)} <span style="font-size:0.76rem;color:var(--gold);font-weight:700;margin-left:3px">${b.rating.toFixed(1)}</span>`
+          : `<span style="font-size:0.7rem;color:var(--muted);font-family:var(--font-sub);letter-spacing:0.04em">Non valutata</span>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.beer-card').forEach(card => {
+    card.addEventListener('click', () => navigate('detail', { id: +card.dataset.id }));
+  });
+}
+
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════
+// DETAIL RENDER
+// ═══════════════════════════════════════════════════════════
+function renderDetail(id) {
+  const b = state.beers.find(x => x.id === id);
+  if (!b) { navigate('home'); return; }
+  state.selectedBeer = id;
+  const cat = getCat(b.category);
+
+  document.getElementById('detail-fav').textContent = b.favorite ? '❤️' : '🤍';
+
+  let badges = makeBadge(cat.name, cat.color);
+  if (b.abv > 0) badges += makeBadge(`${parseFloat(b.abv).toFixed(1)}% ABV`, '#F4C840');
+  if (b.ibu > 0) badges += makeBadge(`${b.ibu} IBU`, '#8ABF40');
+  if (b.origin)  badges += makeBadge(`📍 ${b.origin}`, '#A08060');
+  if (b.color)   badges += makeBadge(b.color, '#8A7A64');
+
+  const html = `
+    <div class="detail-hero" style="--cat-color:${cat.color}">
+      <div class="detail-hero-bg" style="background:linear-gradient(135deg, ${cat.color}20 0%, ${cat.color}08 60%, transparent 100%)"></div>
+      <div class="detail-hero-circle" style="--cat-color:${cat.color}"></div>
+      <div class="detail-hero-emoji">${cat.emoji}</div>
+      <div class="detail-hero-content">
+        <div class="detail-hero-name">${esc(b.name)}</div>
+        ${b.brewery ? `<div class="detail-hero-brewery" style="color:${cat.color}">${esc(b.brewery)}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="detail-badges">${badges}</div>
+
+    <div class="detail-section">
+      <div class="section-header">
+        <div class="section-bar" style="background:var(--gold)"></div>
+        <div class="section-title">La tua valutazione</div>
+      </div>
+      <div class="section-card rating-block">
+        <div class="star-picker" id="detail-star-picker"></div>
+        <div class="rating-label" id="detail-rating-label">${ratingLabel(b.rating)}</div>
+      </div>
+    </div>
+
+    ${b.notes ? `
+    <div class="detail-section">
+      <div class="section-header">
+        <div class="section-bar" style="background:var(--amber)"></div>
+        <div class="section-title">📝 Note personali</div>
+      </div>
+      <div class="section-card"><p class="section-text">${esc(b.notes)}</p></div>
+    </div>` : ''}
+
+    ${b.description ? `
+    <div class="detail-section">
+      <div class="section-header">
+        <div class="section-bar" style="background:var(--amber)"></div>
+        <div class="section-title">🍺 Profilo organolettico</div>
+      </div>
+      <div class="section-card"><p class="section-text">${esc(b.description)}</p></div>
+    </div>` : ''}
+
+    ${b.history ? `
+    <div class="detail-section">
+      <div class="section-header">
+        <div class="section-bar" style="background:${cat.color}"></div>
+        <div class="section-title">📜 Storia e curiosità</div>
+      </div>
+      <div class="section-card">
+        <div class="history-inner">
+          <div class="history-line" style="background:linear-gradient(to bottom, ${cat.color}, transparent)"></div>
+          <p class="section-text">${esc(b.history)}</p>
+        </div>
+      </div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('detail-content').innerHTML = html;
+  buildStarPicker('detail-star-picker', b.rating, (r) => {
+    const beer = state.beers.find(x => x.id === state.selectedBeer);
+    if (beer) {
+      beer.rating = r;
+      save();
+      document.getElementById('detail-rating-label').textContent = ratingLabel(r);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// ADD / EDIT RENDER
+// ═══════════════════════════════════════════════════════════
+function renderAdd(editId) {
+  state.editingId = editId;
+  const b = editId ? state.beers.find(x => x.id === editId) : null;
+
+  document.getElementById('add-title').textContent   = b ? 'Modifica birra' : 'Nuova birra';
+  document.getElementById('save-icon').textContent   = b ? '✓' : '＋';
+  document.getElementById('save-label').textContent  = b ? 'Salva modifiche' : 'Aggiungi birra';
+
+  document.getElementById('f-name').value     = b?.name        || '';
+  document.getElementById('f-brewery').value  = b?.brewery     || '';
+  document.getElementById('f-origin').value   = b?.origin      || '';
+  document.getElementById('f-abv').value      = b?.abv         || '';
+  document.getElementById('f-ibu').value      = b?.ibu         || '';
+  document.getElementById('f-color').value    = b?.color       || '';
+  document.getElementById('f-desc').value     = b?.description || '';
+  document.getElementById('f-history').value  = b?.history     || '';
+  document.getElementById('f-notes').value    = b?.notes       || '';
+  document.getElementById('f-tried').checked  = b ? b.tried    : false;
+  document.getElementById('f-fav').checked    = b?.favorite    || false;
+
+  state.formRating   = b?.rating   || 0;
+  state.formCategory = b?.category || 'lager';
+
+  updateCatSelector();
+  buildStarPicker('form-star-picker', state.formRating, (r) => {
+    state.formRating = r;
+    document.getElementById('form-rating-label').textContent = ratingLabel(r);
+  });
+  document.getElementById('form-rating-label').textContent = ratingLabel(state.formRating);
+  validateForm();
+}
+
+function updateCatSelector() {
+  const cat = getCat(state.formCategory);
+  document.getElementById('cat-sel-emoji').textContent = cat.emoji;
+  document.getElementById('cat-sel-name').textContent  = cat.name;
+  document.getElementById('cat-sel-name').style.color  = cat.color;
+}
+
+function validateForm() {
+  const ok = document.getElementById('f-name').value.trim().length > 0;
+  document.getElementById('save-btn').disabled = !ok;
+  document.getElementById('f-name').classList.toggle('error',
+    !ok && document.getElementById('f-name').value.length > 0);
+}
+
+// ═══════════════════════════════════════════════════════════
+// STAR PICKER BUILDER
+// ═══════════════════════════════════════════════════════════
+function buildStarPicker(containerId, currentRating, onChange) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let rating = currentRating;
+
+  function render() {
+    el.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const filled = rating >= i;
+      const half   = !filled && rating >= i - 0.5;
+      const unit   = document.createElement('div');
+      unit.className = 'star-unit';
+
+      const full = document.createElement('span');
+      full.className = 'star-full';
+      full.textContent = (filled || half) ? '⭐' : '☆';
+      full.style.filter  = (filled || half) ? 'saturate(1)' : 'saturate(0)';
+      full.style.opacity = (filled || half) ? '1' : '0.25';
+      full.addEventListener('click', () => { rating = i; onChange(rating); render(); });
+
+      const halfBtn = document.createElement('button');
+      halfBtn.className = 'star-half-btn';
+      halfBtn.textContent = '½';
+      halfBtn.style.color = half ? 'var(--gold)' : 'var(--barrel)';
+      halfBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rating = i - 0.5;
+        onChange(rating);
+        render();
+      });
+
+      unit.appendChild(full);
+      unit.appendChild(halfBtn);
+      el.appendChild(unit);
+    }
+  }
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATS RENDER
+// ═══════════════════════════════════════════════════════════
+function renderStats() {
+  const beers = state.beers;
+  const tried = beers.filter(b => b.tried);
+  const favs  = beers.filter(b => b.favorite);
+  const rated = tried.filter(b => b.rating > 0);
+  const avgR  = rated.length ? rated.reduce((a,b) => a + b.rating, 0) / rated.length : 0;
+  const cats  = new Set(beers.map(b => b.category)).size;
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card" style="--kpi-color:var(--amber)">
+      <div class="kpi-icon">🍺</div>
+      <div><div class="kpi-value">${tried.length}</div><div class="kpi-label">Birre provate</div></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:#D4524A">
+      <div class="kpi-icon">❤️</div>
+      <div><div class="kpi-value">${favs.length}</div><div class="kpi-label">Preferite</div></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--gold)">
+      <div class="kpi-icon">⭐</div>
+      <div><div class="kpi-value">${avgR > 0 ? avgR.toFixed(1) : '—'}</div><div class="kpi-label">Voto medio</div></div>
+    </div>
+    <div class="kpi-card" style="--kpi-color:var(--hops)">
+      <div class="kpi-icon">🎨</div>
+      <div><div class="kpi-value">${cats}</div><div class="kpi-label">Stili diversi</div></div>
+    </div>`;
+
+  const topEl = document.getElementById('stats-top');
+  const top5  = [...beers].filter(b => b.rating > 0).sort((a,b) => b.rating - a.rating).slice(0,5);
+  if (top5.length) {
+    const medals = ['🥇','🥈','🥉'];
+    topEl.innerHTML = `<div class="stats-section-title">🏆 Top ${top5.length} birre</div>` +
+      top5.map((b,i) => {
+        const cat = getCat(b.category);
+        return `
+        <div class="top-item">
+          <div class="top-rank">${medals[i] || String(i+1)}</div>
+          <div class="top-emoji">${cat.emoji}</div>
+          <div class="top-meta">
+            <div class="top-name">${esc(b.name)}</div>
+            <div class="top-brewery">${esc(b.brewery||'')}</div>
+          </div>
+          ${renderStars(b.rating)}
+          <span style="font-size:0.76rem;color:var(--gold);font-weight:700;margin-left:4px">${b.rating.toFixed(1)}</span>
+        </div>`;
+      }).join('');
+  } else {
+    topEl.innerHTML = `
+      <div class="stats-section-title">🏆 Top birre</div>
+      <div class="section-card" style="text-align:center;padding:24px">
+        <div style="font-size:2rem;opacity:0.3">⭐</div>
+        <p style="color:var(--muted);font-size:0.86rem;margin-top:8px">Nessuna birra valutata ancora.<br>Apri una scheda e dai le stelle!</p>
+      </div>`;
+  }
+
+  const barsEl = document.getElementById('stats-bars');
+  const bycat  = CATEGORIES
+    .map(c => ({ cat:c, count: beers.filter(b => b.category === c.id).length }))
+    .filter(x => x.count > 0)
+    .sort((a,b) => b.count - a.count);
+  const maxC = Math.max(...bycat.map(x => x.count), 1);
+
+  if (bycat.length) {
+    barsEl.innerHTML = `<div class="stats-section-title">📊 Per stile</div>
+      <div class="section-card">
+      ${bycat.map(({cat,count}) => `
+        <div class="bar-row">
+          <span class="bar-emoji">${cat.emoji}</span>
+          <span class="bar-label">${cat.name}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${(count/maxC*100).toFixed(1)}%;background:linear-gradient(90deg,${cat.color},${cat.color}66)"></div>
+          </div>
+          <span class="bar-count" style="color:${cat.color}">${count}</span>
+        </div>`).join('')}
+      </div>`;
+  } else { barsEl.innerHTML = ''; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════════════════
+function toggleFav(id) {
+  const b = state.beers.find(x => x.id === id);
+  if (!b) return;
+  b.favorite = !b.favorite;
+  save();
+  snackbar(b.favorite ? '❤️ Aggiunta ai preferiti' : '💔 Rimossa dai preferiti');
+  if (state.currentView === 'home') renderBeerList();
+  if (state.currentView === 'detail') {
+    document.getElementById('detail-fav').textContent = b.favorite ? '❤️' : '🤍';
+  }
+}
+
+function saveBeer() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) return;
+
+  const isEdit   = !!state.editingId;
+  const existing = isEdit ? state.beers.find(b => b.id === state.editingId) : null;
+
+  const beer = {
+    id:          existing?.id        || uid(),
+    dateAdded:   existing?.dateAdded || Date.now(),
+    name,
+    brewery:     document.getElementById('f-brewery').value.trim(),
+    category:    state.formCategory,
+    rating:      state.formRating,
+    abv:         parseFloat(document.getElementById('f-abv').value) || 0,
+    ibu:         parseInt(document.getElementById('f-ibu').value)   || 0,
+    origin:      document.getElementById('f-origin').value.trim(),
+    color:       document.getElementById('f-color').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    history:     document.getElementById('f-history').value.trim(),
+    notes:       document.getElementById('f-notes').value.trim(),
+    tried:       document.getElementById('f-tried').checked,
+    favorite:    document.getElementById('f-fav').checked,
+  };
+
+  if (isEdit) {
+    const idx = state.beers.findIndex(b => b.id === state.editingId);
+    if (idx > -1) state.beers[idx] = beer;
+  } else {
+    state.beers.unshift(beer);
+  }
+  save();
+  snackbar(isEdit ? `✏️ "${name}" aggiornata!` : `🍺 "${name}" aggiunta!`);
+  navigate(
+    isEdit ? 'detail' : 'home',
+    isEdit ? { id: beer.id } : {}
+  );
+}
+
+function deleteBeer(id) {
+  const b = state.beers.find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('delete-dialog-text').textContent =
+    `Vuoi davvero eliminare "${b.name}"? L'operazione non è reversibile.`;
+  const dlg = document.getElementById('delete-dialog');
+  dlg.classList.add('open');
+
+  document.getElementById('delete-confirm').onclick = () => {
+    state.beers = state.beers.filter(x => x.id !== id);
+    save();
+    dlg.classList.remove('open');
+    snackbar(`🗑️ "${b.name}" eliminata`);
+    navigate('home');
+  };
+  document.getElementById('delete-cancel').onclick = () => dlg.classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVENT WIRING
+// ═══════════════════════════════════════════════════════════
+function wire() {
+  // Nav
+  document.querySelectorAll('.nav-item[data-view]').forEach(n =>
+    n.addEventListener('click', () => navigate(n.dataset.view)));
+
+  // FAB
+  document.getElementById('fab').addEventListener('click', () => navigate('add'));
+
+  // Detail actions
+  document.getElementById('detail-back').addEventListener('click', () => navigate('home'));
+  document.getElementById('detail-fav').addEventListener('click', () => {
+    if (state.selectedBeer) toggleFav(state.selectedBeer);
+  });
+  document.getElementById('detail-edit').addEventListener('click', () => {
+    if (state.selectedBeer) navigate('add', { id: state.selectedBeer });
+  });
+  document.getElementById('detail-delete').addEventListener('click', () => {
+    if (state.selectedBeer) deleteBeer(state.selectedBeer);
+  });
+
+  // Add/edit back — torna sempre alla lista se è una nuova birra, al detail se stava modificando
+  document.getElementById('add-back').addEventListener('click', () => {
+    if (state.editingId) {
+      navigate('detail', { id: state.editingId });
+    } else {
+      navigate('home');
+    }
+  });
+
+  // Form validation
+  document.getElementById('f-name').addEventListener('input', validateForm);
+
+  // Save
+  document.getElementById('save-btn').addEventListener('click', saveBeer);
+
+  // Search
+  const searchInput = document.getElementById('search-input');
+  const searchClear = document.getElementById('search-clear');
+  searchInput.addEventListener('input', () => {
+    state.searchQuery = searchInput.value;
+    state.selectedCategory = null;
+    searchClear.classList.toggle('visible', !!searchInput.value);
+    renderHome();
+  });
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    state.searchQuery = '';
+    searchClear.classList.remove('visible');
+    renderHome();
+  });
+
+  // Filter bar
+  document.getElementById('filter-bar').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.filterType = chip.dataset.filter;
+    renderBeerList();
+  });
+
+  // Sort dropdown
+  document.getElementById('sort-toggle').addEventListener('click', e => {
+    e.stopPropagation();
+    document.getElementById('sort-dropdown').classList.toggle('open');
+  });
+  document.addEventListener('click', () =>
+    document.getElementById('sort-dropdown').classList.remove('open'));
+  document.getElementById('sort-dropdown').addEventListener('click', e => {
+    e.stopPropagation();
+    const opt = e.target.closest('.sort-option');
+    if (!opt) return;
+    state.sortOrder = opt.dataset.sort;
+    document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    document.getElementById('sort-dropdown').classList.remove('open');
+    renderBeerList();
+  });
+
+  // Category sheet
+  document.getElementById('cat-selector').addEventListener('click', openCatSheet);
+  document.getElementById('cat-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('cat-overlay'))
+      document.getElementById('cat-overlay').classList.remove('open');
+  });
+
+  // Delete dialog — close on backdrop
+  document.getElementById('delete-dialog').addEventListener('click', e => {
+    if (e.target === document.getElementById('delete-dialog'))
+      document.getElementById('delete-dialog').classList.remove('open');
+  });
+
+  // Export / Import buttons
+  document.getElementById('export-btn').addEventListener('click', exportData);
+  document.getElementById('import-btn').addEventListener('click', importData);
+
+  // File input — triggered programmatically
+  const importFileInput = document.getElementById('import-file-input');
+  importFileInput.addEventListener('change', () => {
+    const file = importFileInput.files[0];
+    importFileInput.value = '';   // reset so the same file can be re-selected
+    if (file) handleImportFile(file);
+  });
+
+  // Import dialog actions
+  document.getElementById('import-merge').addEventListener('click',   () => applyImport('merge'));
+  document.getElementById('import-replace').addEventListener('click', () => applyImport('replace'));
+  document.getElementById('import-cancel').addEventListener('click',  () => {
+    _importPending = null;
+    document.getElementById('import-dialog').classList.remove('open');
+  });
+  document.getElementById('import-dialog').addEventListener('click', e => {
+    if (e.target === document.getElementById('import-dialog')) {
+      _importPending = null;
+      document.getElementById('import-dialog').classList.remove('open');
+    }
+  });
+}
+
+function openCatSheet() {
+  const overlay = document.getElementById('cat-overlay');
+  const list    = document.getElementById('cat-sheet-list');
+  list.innerHTML = CATEGORIES.map(c => `
+    <div class="sheet-item ${state.formCategory === c.id ? 'active' : ''}" data-cat="${c.id}"
+         style="${state.formCategory === c.id ? `--cat-color:${c.color}` : ''}">
+      <span class="sheet-item-emoji">${c.emoji}</span>
+      <span class="sheet-item-label" style="${state.formCategory === c.id ? `color:${c.color}` : ''}">${c.name}</span>
+      ${state.formCategory === c.id ? '<span class="sheet-item-check">✓</span>' : ''}
+    </div>`).join('');
+
+  list.querySelectorAll('.sheet-item').forEach(item => {
+    item.addEventListener('click', () => {
+      state.formCategory = item.dataset.cat;
+      updateCatSelector();
+      overlay.classList.remove('open');
+    });
+  });
+  overlay.classList.add('open');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+load();
+wire();
+navigate('home');
+
+
+// ═══════════════════════════════════════════════════════════
+// PWA — Service Worker, Install prompt, Offline, Deep-link
+// ═══════════════════════════════════════════════════════════
+
+(function () {
+  'use strict';
+
+  // ── Service Worker registration ─────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+        console.log('[PWA] SW registrato:', reg.scope);
+
+        // Controlla aggiornamenti ogni volta che l'utente torna sulla tab
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') reg.update();
+        });
+
+        // Mostra toast se c'è un nuovo SW in attesa
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateToast(newWorker);
+            }
+          });
+        });
+
+        // Se il SW è già in attesa (caricamento con tab già aperta)
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          showUpdateToast(reg.waiting);
+        }
+
+      } catch (err) {
+        console.warn('[PWA] SW registration failed:', err);
+      }
+    });
+
+    // Reload automatico dopo l'attivazione del nuovo SW
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) { refreshing = true; window.location.reload(); }
+    });
+  }
+
+  // ── Update toast ──────────────────────────────────────────────────────────
+  let _pendingWorker = null;
+
+  function showUpdateToast(worker) {
+    _pendingWorker = worker;
+    document.getElementById('pwa-update-toast').classList.add('show');
+  }
+
+  document.getElementById('pwa-update-btn')?.addEventListener('click', () => {
+    if (_pendingWorker) {
+      _pendingWorker.postMessage({ type: 'SKIP_WAITING' });
+    }
+    document.getElementById('pwa-update-toast').classList.remove('show');
+  });
+
+  // ── Install banner ────────────────────────────────────────────────────────
+  const INSTALL_DISMISSED_KEY = 'pwa-install-dismissed-v1';
+  let _deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    _deferredPrompt = e;
+
+    // Non mostrare se l'utente l'ha già rifiutato
+    if (sessionStorage.getItem(INSTALL_DISMISSED_KEY)) return;
+
+    // Mostra il banner dopo 4 secondi
+    setTimeout(() => {
+      document.getElementById('pwa-install-banner')?.classList.add('show');
+    }, 4000);
+  });
+
+  document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+    if (!_deferredPrompt) return;
+    _deferredPrompt.prompt();
+    const { outcome } = await _deferredPrompt.userChoice;
+    console.log('[PWA] Install outcome:', outcome);
+    _deferredPrompt = null;
+    document.getElementById('pwa-install-banner')?.classList.remove('show');
+    if (outcome === 'accepted') snackbar('🍺 App installata — trovala nella Home!');
+  });
+
+  document.getElementById('pwa-install-close')?.addEventListener('click', () => {
+    document.getElementById('pwa-install-banner')?.classList.remove('show');
+    sessionStorage.setItem(INSTALL_DISMISSED_KEY, '1');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('pwa-install-banner')?.classList.remove('show');
+    _deferredPrompt = null;
+    console.log('[PWA] App installata con successo');
+  });
+
+  // ── Offline / Online detection ────────────────────────────────────────────
+  const offlineBar = document.getElementById('offline-bar');
+
+  function updateOnlineStatus() {
+    if (!navigator.onLine) {
+      offlineBar?.classList.add('show');
+    } else {
+      offlineBar?.classList.remove('show');
+    }
+  }
+
+  window.addEventListener('online',  updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus(); // check at startup
+
+  // ── Deep-link via URL params (from manifest shortcuts) ───────────────────
+  function handleUrlAction() {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    if (action === 'add')   { navigate('add'); }
+    if (action === 'stats') { navigate('stats'); }
+  }
+
+  // Esegui dopo che il DOM e l'app sono inizializzati
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(handleUrlAction, 100);
+  });
+
+})();
+
+</script>
+
+<!-- ═══ PWA — Offline bar ═══ -->
+<div id="offline-bar">📡 Sei offline — la cantina è comunque disponibile</div>
+
+<!-- ═══ PWA — Install banner ═══ -->
+<div id="pwa-install-banner">
+  <span class="pwa-icon">🍺</span>
+  <div class="pwa-text">
+    <div class="pwa-title">Aggiungi alla Home</div>
+    <div class="pwa-sub">Accesso rapido, funziona offline</div>
+  </div>
+  <button class="pwa-btn" id="pwa-install-btn">Installa</button>
+  <button class="pwa-close" id="pwa-install-close">✕</button>
+</div>
+
+<!-- ═══ PWA — Update toast ═══ -->
+<div id="pwa-update-toast">
+  <span>🔄</span>
+  <span class="update-text">Nuova versione disponibile!</span>
+  <button class="update-btn" id="pwa-update-btn">Aggiorna</button>
+</div>
+
+</body>
+</html>

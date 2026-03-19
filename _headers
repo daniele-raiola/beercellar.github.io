@@ -1,0 +1,28 @@
+# ═══════════════════════════════════════════════════════════
+# Cloudflare Pages — Headers per PWA
+# ═══════════════════════════════════════════════════════════
+
+# Service Worker — mai in cache, altrimenti gli aggiornamenti non arrivano
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: application/javascript; charset=utf-8
+
+# Manifest — breve cache, refresh frequente
+/manifest.json
+  Cache-Control: public, max-age=3600
+  Content-Type: application/manifest+json; charset=utf-8
+
+# Icone — cache lunga (cambiano solo con nuova versione)
+/icons/*
+  Cache-Control: public, max-age=604800, immutable
+
+# App shell — stale-while-revalidate per risposta rapida + aggiornamento background
+/index.html
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Tutti gli asset generici
+/*
+  X-Content-Type-Options: nosniff

@@ -1,0 +1,81 @@
+{
+  "name": "Beer Cellar",
+  "short_name": "Beer Cellar",
+  "description": "La tua cantina digitale per birre artigianali — traccia, valuta e scopri.",
+  "lang": "it",
+  "start_url": "./index.html?utm_source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#130F08",
+  "theme_color": "#F07828",
+  "categories": ["food", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Aggiungi birra",
+      "short_name": "Aggiungi",
+      "description": "Aggiungi una nuova birra alla cantina",
+      "url": "./index.html?action=add&utm_source=pwa_shortcut",
+      "icons": [{ "src": "icons/shortcut-add.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Statistiche",
+      "short_name": "Stats",
+      "description": "Visualizza le statistiche della tua cantina",
+      "url": "./index.html?action=stats&utm_source=pwa_shortcut",
+      "icons": [{ "src": "icons/shortcut-stats.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
