@@ -4,7 +4,7 @@
  * I dati dell'app sono in localStorage → nessun sync remoto necessario.
  */
 
-const APP_VERSION   = 'v1.0.0';
+const APP_VERSION   = 'v1.1.0';
 const CACHE_STATIC  = `beer-cellar-static-${APP_VERSION}`;
 const CACHE_FONTS   = `beer-cellar-fonts-${APP_VERSION}`;
 const ALL_CACHES    = [CACHE_STATIC, CACHE_FONTS];

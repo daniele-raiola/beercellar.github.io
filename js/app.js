@@ -201,14 +201,20 @@ async function loadSprite() {
 // INIT
 // ═══════════════════════════════════════════════════════════
 
-// Handle browser/device back button
+// History guard: prevents PWA from closing when pressing device back button.
+// The history stack is: [GUARD] → [home] → [detail] → [add] → …
+// When back reaches the guard, we bounce forward to home again.
+const HISTORY_GUARD = { _guard: true };
+
 window.addEventListener('popstate', e => {
   const s = e.state;
-  if (s && s.view) {
-    _renderView(s.view, s.opts || {});
-  } else {
+  if (!s || s._guard) {
+    // Reached the guard (or fell out of app history) → bounce back to home
+    history.pushState({ view: 'home', opts: {} }, '');
     _renderView('home', {});
+    return;
   }
+  _renderView(s.view, s.opts || {});
 });
 
 function _renderView(view, opts) {
@@ -238,5 +244,8 @@ function _renderView(view, opts) {
 await loadSprite();
 load();
 wire();
-navigate('home', {}, { replace: true });
+
+// Set up history stack: GUARD (replaces browser's initial entry) + home (pushed on top)
+history.replaceState(HISTORY_GUARD, '');
+navigate('home');
 initPWA();
