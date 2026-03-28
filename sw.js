@@ -35,11 +35,18 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_STATIC).then((cache) => {
       return cache.addAll(PRECACHE_URLS);
-    }).then(() => {
-      // Attiva subito senza attendere che le tab esistenti vengano chiuse
-      return self.skipWaiting();
     })
+    // Non chiamare skipWaiting() qui: l'app controlla quando attivare il nuovo SW
   );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MESSAGE — l'app può ordinare al SW di attivarsi subito
+// ─────────────────────────────────────────────────────────────────────────────
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,6 +84,12 @@ self.addEventListener('fetch', (event) => {
   // ── Font Google: stale-while-revalidate ──────────────────────────────────
   if (FONT_HOSTS.some((host) => url.hostname === host)) {
     event.respondWith(staleWhileRevalidate(request, CACHE_FONTS));
+    return;
+  }
+
+  // ── version.json: sempre dalla rete (per rilevare deploy) ────────────────
+  if (url.origin === self.location.origin && url.pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(request).catch(() => caches.match(request)));
     return;
   }
 
